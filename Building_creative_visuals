@@ -1,0 +1,147 @@
+library(shiny)
+library(shinydashboard)
+library(DT)
+library(ggplot2)
+library(datasets)
+library(plotly)
+
+ui <- dashboardPage( skin = "yellow",
+  dashboardHeader(title = "Building Creative Visuals", titleWidth = 300, 
+                  dropdownMenu(type = "messages",
+                               messageItem(
+                                 from = "Sales Dept",
+                                 message = "Sales are steady this month."
+                               ),
+                               messageItem(
+                                 from = "New User",
+                                 message = "How do I register?",
+                                 icon = icon("question")
+                               ),
+                               messageItem(
+                                 from = "Support",
+                                 message = "The new server is ready.",
+                                 icon = icon("life-ring"),
+                                 time = "2014-12-01"
+                               ),
+                               messageItem(from ="New User",
+                                           message = "Can I get some help?",
+                                           time = "Today",
+                                           icon = icon("clock")
+                               )
+                  ),
+                  dropdownMenu(type = "tasks", badgeStatus = "success",
+                               taskItem(value = 90, color = "green",
+                                        "Documentation"
+                               ),
+                               taskItem(value = 17, color = "aqua",
+                                        "Project X"
+                               ),
+                               taskItem(value = 75, color = "yellow",
+                                        "Server deployment"
+                               ),
+                               taskItem(value = 80, color = "red",
+                                        "Overall project"
+                               )
+                  ),
+                  dropdownMenu(type = "notifications",
+                               notificationItem(
+                                 text = "5 new users today",
+                                 icon("users")
+                               ),
+                               notificationItem(
+                                 text = "12 items delivered",
+                                 icon("truck"),
+                                 status = "success"
+                               ),
+                               notificationItem(
+                                 text = "Server load at 86%",
+                                 icon = icon("exclamation-triangle"),
+                                 status = "warning"
+                               )
+                  )
+                  
+                  
+                  ),
+    dashboardSidebar(
+      sidebarMenu(
+        menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+        menuItem("Widgets", tabName = "widgets", icon = icon("th")),
+        menuItem("Programs", tabName = "programs", icon = icon("th")),
+        menuItem("Data", tabName = 'dataset', icon = icon("table")),
+        menuItem("Graphs and Plots", tabName = 'graphs', icon = icon("chart-bar")),
+        menuItem("Visualization of Data", tabName = 'analyzing', icon = icon("chart-area"))
+      )
+    ),
+  dashboardBody(
+    tabItems(
+    tabItem(tabName = "dashboard",
+    fluidRow(
+    box(plotOutput("plot1", height = 300)),
+    
+    box(
+      title = "Controls",
+      sliderInput("slider", "Number of observations:", 1, 100, 50)
+    )
+  
+  )
+  
+),
+tabItem(tabName = "widgets",
+        h2("Widgets tab content"),
+p("This is a widgets page and content will be put here")
+),
+tabItem(tabName = "programs",
+        h2("Program tab content")),
+
+tabItem(tabName = "dataset",
+        h3("Diamond dataset"),
+       dataTableOutput("baltdiam")),
+tabItem(tabName = "graphs",
+        h3("Observe Pretty Visuals"),
+        mainPanel(
+          tabsetPanel(
+            id = 'dataset',
+            tabPanel("AirQuality", dataTableOutput("tb1")),
+            tabPanel("infert", dataTableOutput("tb2")),
+            tabPanel("European CrossFit", dataTableOutput("tb3"))
+          )
+        )),
+tabItem(tabName ="analyzing",
+        h3("Visuals"),
+       fluidRow(box(title = "Visualization", plotlyOutput("plot3", height = 250))),
+       fluidRow(box(title = "Checking Intricately", plotlyOutput("plot4", height = 250)))
+       )
+
+
+    )
+))
+
+
+
+server <- function(input, output, session) {
+  set.seed(122)
+  histdata <- rnorm(500)
+  
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+  output$baltdiam = DT::renderDataTable({
+    diamonds
+  })
+  output$tb1 <- DT::renderDataTable({
+    DT::datatable(airquality, options = list(lengthMenu = c(5, 7, 10), pageLength = 5, orderClasses = TRUE))
+  })
+  
+  output$tb2 <- DT::renderDataTable({
+    DT::datatable(DNase, options = list(lengthMenu = c(5, 7, 10), pageLength = 5, orderClasses = TRUE))
+  })
+  
+  output$tb3 <- DT::renderDataTable({
+    DT::datatable(euro.cross, options = list(lengthMenu = c(5, 7, 10), pageLength = 5))
+  })
+  
+
+}
+
+shinyApp(ui, server)
